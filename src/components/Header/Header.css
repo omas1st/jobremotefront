@@ -4,29 +4,23 @@
   align-items: center;
   padding: 1rem;
   background-color: #f8f9fa;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.header-left {
+.logo-container {
   flex: 1;
 }
 
-.header-logo {
+.logo {
   height: 50px;
 }
 
-.header-center .header-title {
-  font-size: 1.5rem;
-  color: #333;
-  text-decoration: none;
-}
-
-.header-right {
+.nav {
   display: flex;
   gap: 1rem;
 }
 
-.header-link {
+.nav-link {
   text-decoration: none;
   color: #333;
   font-weight: 500;
@@ -35,6 +29,6 @@
   transition: background-color 0.3s;
 }
 
-.header-link:hover {
-  background-color: #e2e6ea;
+.nav-link:hover {
+  background-color: #e9ecef;
 }

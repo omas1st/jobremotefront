@@ -11,30 +11,43 @@ const WorkerDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch user profile from backend
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resUser = await api.get('/user/profile');
-        const u = resUser.data;
+        const res = await api.get('/user/profile');
+        // res.data contains user object, minus password
         setUser({
-          firstName: u.firstName,
-          walletBalance: u.walletBalance,
-          createdAt: u.createdAt,
-          attemptedTasks: u.attemptedTasks || []
+          firstName: res.data.firstName,
+          walletBalance: res.data.walletBalance,
+          createdAt: res.data.createdAt,
+          attemptedTasks: res.data.attemptedTasks || []
         });
       } catch (err) {
+        console.error('Error fetching user profile:', err);
+        // If token expired or invalid, redirect to login:
         localStorage.removeItem('token');
         navigate('/login');
         return;
       }
 
-      // Fetch all tasks
-      try {
-        const resTasks = await api.get('/admin/tasks'); // admin-protected endpoint
-        setTasks(resTasks.data);
-      } catch {
-        setTasks([]);
-      }
+      // (Optional) You could fetch tasks from the backend too—here we simulate static tasks:
+      setTasks([
+        {
+          id: '1',
+          title: 'Data Entry',
+          description: 'Simple data entry task',
+          payment: 5.0,
+          externalLink: 'https://example.com/task1'
+        },
+        {
+          id: '2',
+          title: 'Survey',
+          description: 'Complete a short survey',
+          payment: 2.5,
+          externalLink: 'https://example.com/task2'
+        }
+      ]);
 
       setLoading(false);
     };
@@ -71,12 +84,14 @@ const WorkerDashboard = () => {
   const handleTaskAttempt = async (taskId) => {
     try {
       await api.post('/user/attempt-task', { taskId });
+      // Update local copy of attemptedTasks
       setUser((prev) => ({
         ...prev,
         attemptedTasks: [...(prev.attemptedTasks || []), taskId]
       }));
       alert('Task marked as attempted');
-    } catch {
+    } catch (err) {
+      console.error('Error attempting task:', err);
       alert('Could not mark task as attempted. Try again.');
     }
   };
@@ -101,11 +116,11 @@ const WorkerDashboard = () => {
         <div className="tasks-grid">
           {tasks.map((task) => (
             <TaskCard
-              key={task._id}
+              key={task.id}
               task={task}
               onStart={() => handleStartTask(task.externalLink)}
-              onAttempt={() => handleTaskAttempt(task._id)}
-              disabled={user.attemptedTasks.includes(task._id)}
+              onAttempt={() => handleTaskAttempt(task.id)}
+              disabled={user.attemptedTasks.includes(task.id)}
             />
           ))}
         </div>

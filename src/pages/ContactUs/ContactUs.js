@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import api from '../../utils/api';
 import './ContactUs.css';
 
 const ContactUs = () => {
@@ -7,19 +6,20 @@ const ContactUs = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
 
     try {
-      // Send message to admin via protected endpoint
-      await api.post('/user/contact-admin', { message });
-      setSubmitStatus('success');
-      setMessage('');
+      // Simulate API call
+      setTimeout(() => {
+        setSubmitStatus('success');
+        setMessage('');
+        setIsSubmitting(false);
+      }, 1000);
     } catch (error) {
       setSubmitStatus('error');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -38,15 +38,15 @@ const ContactUs = () => {
               required
             ></textarea>
           </div>
-
-          <button
-            type="submit"
+          
+          <button 
+            type="submit" 
             className="submit-button"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Sending...' : 'Send Message'}
           </button>
-
+          
           {submitStatus === 'success' && (
             <p className="success-message">Message sent successfully!</p>
           )}
