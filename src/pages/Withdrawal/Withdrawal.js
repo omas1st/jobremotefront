@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
 import './Withdrawal.css';
 
 const Withdrawal = () => {
@@ -8,31 +9,55 @@ const Withdrawal = () => {
   const [amount, setAmount] = useState(0);
   const [crypto, setCrypto] = useState('Bitcoin');
   const [walletAddress, setWalletAddress] = useState('');
+  const [taxAmount, setTaxAmount] = useState(0);
 
   useEffect(() => {
-    // Simulate fetching wallet balance
-    const userData = JSON.parse(localStorage.getItem('user'));
-    if (userData && userData.walletBalance) {
-      setWalletBalance(userData.walletBalance);
-    } else {
-      setWalletBalance(350); // Default value
-    }
-  }, []);
+    const fetchData = async () => {
+      try {
+        // Fetch user profile to get balance
+        const resUser = await api.get('/user/profile');
+        const user = resUser.data;
+        setWalletBalance(user.walletBalance || 0);
 
-  const handleSubmit = (e) => {
+        // Calculate tax (10% of balance)
+        setTaxAmount((user.walletBalance || 0) * 0.1);
+      } catch (err) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (amount < 200) {
       alert('Minimum withdrawal amount is $200');
       return;
     }
-    
+
     if (amount > walletBalance) {
       alert('Insufficient balance');
       return;
     }
-    
-    navigate('/verify-withdrawal');
+
+    try {
+      // Initiate withdrawal on backend (sends PIN to user email)
+      await api.get('/user/initiate-withdrawal');
+
+      // Redirect to VerifyWithdrawal, passing amount, crypto, and address
+      navigate('/verify-withdrawal', {
+        state: {
+          amount,
+          crypto,
+          address: walletAddress
+        }
+      });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Cannot initiate withdrawal');
+    }
   };
 
   return (
@@ -40,7 +65,8 @@ const Withdrawal = () => {
       <div className="withdrawal-card">
         <h2 className="withdrawal-title">Withdrawal</h2>
         <p className="balance">Wallet Balance: ${walletBalance.toFixed(2)}</p>
-        
+        <p className="balance">Tax (10%): ${taxAmount.toFixed(2)}</p>
+
         <form onSubmit={handleSubmit} className="withdrawal-form">
           <div className="form-group">
             <label className="form-label">Amount to Withdraw (min $200)</label>
@@ -54,10 +80,10 @@ const Withdrawal = () => {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label className="form-label">Choose Cryptocurrency</label>
-            <select 
+            <select
               value={crypto}
               onChange={(e) => setCrypto(e.target.value)}
               className="form-input"
@@ -71,7 +97,7 @@ const Withdrawal = () => {
               <option value="Dogecoin">Dogecoin (DOGE)</option>
             </select>
           </div>
-          
+
           <div className="form-group">
             <label className="form-label">Wallet Address</label>
             <input
@@ -82,8 +108,10 @@ const Withdrawal = () => {
               required
             />
           </div>
-          
-          <button type="submit" className="withdrawal-button">Confirm Withdrawal</button>
+
+          <button type="submit" className="withdrawal-button">
+            Confirm Withdrawal
+          </button>
         </form>
       </div>
     </div>

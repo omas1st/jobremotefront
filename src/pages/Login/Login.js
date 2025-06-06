@@ -19,26 +19,19 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // CALL THE BACKEND LOGIN ENDPOINT:
       const response = await api.post('/auth/login', {
         email: formData.email,
         password: formData.password
       });
-
-      // Backend responds { token, profileType }
       const { token, profileType } = response.data;
-
-      // Save JWT in localStorage
       localStorage.setItem('token', token);
 
-      // Redirect based on profileType
       if (profileType === 'remote worker') {
         navigate('/worker-dashboard');
       } else {
         navigate('/customer-dashboard');
       }
     } catch (err) {
-      console.error('Login failed:', err);
       if (
         err.response &&
         err.response.status === 400 &&

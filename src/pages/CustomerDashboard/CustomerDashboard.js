@@ -8,40 +8,47 @@ const CustomerDashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [user, setUser] = useState(null);
-  const [messages] = useState([]); // If you fetch actual messages, replace this
+  const [messages, setMessages] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndMessages = async () => {
       try {
-        const res = await api.get('/user/profile');
-        setUser(res.data);
+        const resUser = await api.get('/user/profile');
+        setUser(resUser.data);
+
+        // Fetch inbox messages (if stored in user.messages)
+        if (resUser.data.messages) {
+          setMessages(resUser.data.messages);
+        }
       } catch (err) {
-        console.error('Error fetching user profile:', err);
+        // If not authenticated, redirect to login
         localStorage.removeItem('token');
         navigate('/login');
       }
     };
 
-    fetchUser();
+    fetchUserAndMessages();
   }, [navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
 
     try {
-      // Simulate sending to backend’s /user/contact-admin if you like:
-      // await api.post('/user/contact-admin', { message });
-      setTimeout(() => {
-        setSubmitStatus('success');
-        setMessage('');
-        setIsSubmitting(false);
-      }, 1000);
+      // Send message to admin
+      await api.post('/user/contact-admin', { message });
+      setSubmitStatus('success');
+      setMessage('');
+
+      // Optionally refetch messages
+      const res = await api.get('/user/profile');
+      setMessages(res.data.messages || []);
     } catch (error) {
       setSubmitStatus('error');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -90,8 +97,8 @@ const CustomerDashboard = () => {
           {messages.length > 0 ? (
             messages.map((msg, index) => (
               <div key={index} className="message-card">
-                <p className="message-text">{msg.text}</p>
-                <p className="message-date">{msg.date}</p>
+                <p className="message-text">{msg.content}</p>
+                <p className="message-date">{new Date(msg.date).toLocaleString()}</p>
               </div>
             ))
           ) : (

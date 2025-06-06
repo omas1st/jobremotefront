@@ -1,0 +1,27 @@
+.users-profile {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.users-profile h2 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.users-profile table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-profile th,
+.users-profile td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem;
+  text-align: left;
+  color: #555;
+}
+
+.users-profile th {
+  background-color: #f8f9fa;
+}

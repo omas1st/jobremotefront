@@ -45,7 +45,6 @@ const Register = () => {
     }
 
     try {
-      // CALL THE BACKEND REGISTER ENDPOINT:
       const response = await api.post('/auth/register', {
         profileType,
         firstName,
@@ -57,20 +56,15 @@ const Register = () => {
         password
       });
 
-      // The backend returns { token, profileType } on success
       const { token, profileType: returnedProfileType } = response.data;
-
-      // Save JWT token in localStorage
       localStorage.setItem('token', token);
 
-      // Redirect based on profileType
       if (returnedProfileType === 'remote worker') {
         navigate('/worker-dashboard');
       } else {
         navigate('/customer-dashboard');
       }
     } catch (err) {
-      console.error('Registration failed:', err);
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
