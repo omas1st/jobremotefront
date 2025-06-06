@@ -1,0 +1,28 @@
+.admin-panel {
+  display: flex;
+  height: 100vh;
+}
+.admin-nav {
+  width: 200px;
+  background: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+}
+.admin-nav a {
+  padding: 1rem;
+  text-decoration: none;
+  color: #333;
+}
+.admin-nav a.active {
+  background: #ddd;
+  font-weight: bold;
+}
+.admin-nav button {
+  margin: 1rem;
+  padding: 0.5rem;
+}
+.admin-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
