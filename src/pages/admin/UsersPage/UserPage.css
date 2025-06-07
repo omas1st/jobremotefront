@@ -1,0 +1,33 @@
+/* src/pages/admin/UsersPage/UsersPage.css */
+
+.users-page {
+  padding: 1.5rem;
+}
+
+.users-page h1 {
+  margin-bottom: 1rem;
+}
+
+.users-page table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-page th,
+.users-page td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.users-page th {
+  background-color: #f4f4f4;
+}
+
+.users-page tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.users-page .error {
+  color: red;
+}
